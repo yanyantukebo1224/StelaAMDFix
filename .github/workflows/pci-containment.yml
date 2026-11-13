@@ -53,7 +53,7 @@ jobs:
       # configuration-space tests directly. Testing stela-cli alone does not
       # execute dependency crates' unit-test modules.
       - name: Test PCI driver base
-        run: cargo test --locked -p stela-driver-base --lib
+        run: cargo test --locked -p stela-driver-base
 
       - name: Lint PCI driver base
         run: cargo clippy --locked -p stela-driver-base --all-targets -- -D warnings
