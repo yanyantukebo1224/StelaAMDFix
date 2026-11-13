@@ -40,17 +40,23 @@ fn root_bus_amd_lpc_bridge_is_not_mistaken_for_a_hardwired_host_bridge() {
 #[test]
 fn hardwired_bus_master_exception_is_limited_to_root_bus_host_bridges() {
     let root_host_bridge = command_plan(0x0600, true);
-    assert!(root_host_bridge
-        .check_disabled(command_readback(0x040f))
-        .is_ok());
+    assert!(
+        root_host_bridge
+            .check_disabled(command_readback(0x040f))
+            .is_ok()
+    );
 
     let downstream_host_bridge = command_plan(0x0600, false);
-    assert!(downstream_host_bridge
-        .check_disabled(command_readback(0x040f))
-        .is_err());
+    assert!(
+        downstream_host_bridge
+            .check_disabled(command_readback(0x040f))
+            .is_err()
+    );
 
     let root_lpc_bridge = command_plan(0x0601, true);
-    assert!(root_lpc_bridge
-        .check_disabled(command_readback(0x040f))
-        .is_err());
+    assert!(
+        root_lpc_bridge
+            .check_disabled(command_readback(0x040f))
+            .is_err()
+    );
 }
