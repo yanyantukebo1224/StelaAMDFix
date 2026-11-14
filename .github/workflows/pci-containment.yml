@@ -1,0 +1,59 @@
+name: pci-containment
+
+on:
+  push:
+    branches:
+      - main
+      - "work/**"
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pci-containment-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: "0"
+
+jobs:
+  pci-containment:
+    name: PCI containment tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+
+      - name: Install Rust
+        run: |
+          rustup toolchain install
+          rustc --version
+
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.rustup/toolchains
+            ~/.cargo/registry/index
+            ~/.cargo/registry/cache
+            ~/.cargo/git/db
+          key: pci-containment-${{ runner.os }}-${{ hashFiles('rust-toolchain.toml', 'Cargo.lock') }}
+          restore-keys: |
+            pci-containment-${{ runner.os }}-${{ hashFiles('rust-toolchain.toml') }}-
+
+      # Run the crate that owns Plan, MasterSeal and the simulated PCI
+      # configuration-space tests directly. Testing stela-cli alone does not
+      # execute dependency crates' unit-test modules.
+      - name: Test PCI driver base
+        run: cargo test --locked -p stela-driver-base
+
+      - name: Lint PCI driver base
+        run: cargo clippy --locked -p stela-driver-base --all-targets -- -D warnings

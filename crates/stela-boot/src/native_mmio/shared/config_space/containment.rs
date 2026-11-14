@@ -966,6 +966,22 @@ impl Source {
         // SAFETY: the caller keeps the complete captured topology exclusive.
         // with_config_inventory retires the last read-only map before return.
         let inputs = unsafe { self.with_config_inventory(census) }?;
+        // Preserve a hardware-specific diagnostic without changing ownership
+        // or containment policy. The low byte of CLASS_REVISION is Revision ID.
+        for input in &inputs {
+            if input.header.identity == 0x790e_1022 {
+                let class_revision = input.header.class_revision;
+                crate::output::arguments(format_args!(
+                    "HOST PCI AMD LPC {:04x}:{:02x}:{:02x}.{} class={:06x} revision={:02x}\\n",
+                    input.address.segment,
+                    input.address.bus,
+                    input.address.device,
+                    input.address.function,
+                    class_revision >> 8,
+                    class_revision & 0xff,
+                ));
+            }
+        }
         let count = inputs.len();
         let mut order = Vec::new();
         order
