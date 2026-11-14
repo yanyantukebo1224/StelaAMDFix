@@ -8,7 +8,9 @@ fn command_plan(class_code: u32, root_bus: bool) -> Plan {
         |offset, width| -> Result<u32, ClaimError> {
             Ok(match (offset, width) {
                 (0x04, 2) => 0x040f,
-                (0x08, 4) => class_code << 8,
+                // PCI config offset 0x08 stores Revision ID in bits 7:0
+                // and the 24-bit Class Code in bits 31:8.
+                (0x08, 4) => class_code << 16,
                 (0x3d, 1) => 0,
                 _ => 0,
             })
